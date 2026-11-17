@@ -5,6 +5,25 @@
 **Panel**
 - The Note widget can be edited from the phone: tap it, write, save (#218, [cavalei](https://github.com/cavalei)).
 
+
+## 0.9.19 — 2026-11-17
+
+A smoother Camera widget, and the app on Android 5.0 and 6.0.
+
+**Panel**
+- Camera widget: smoother. 5 pictures a second by default, and 1 to 10 per camera in Settings › General › Cameras;
+  the next picture is decoded before it replaces the one on screen, so it no longer flickers black between frames, and
+  an unchanged picture isn't sent again (#209, [Hoangminhfcb](https://github.com/Hoangminhfcb)).
+
+**Android app**
+- The app installs on Android 5.0 and 6.0 too (it was Android 7.0). On Android 6 widgets scale fully, as its WebView
+  updates go up to version 106. On Android 5 the last WebView is 95, so the panel runs but widgets don't scale as well
+  and the WebView notice stays. Tried on a Galaxy Tab S with Android 6.0.1 and WebView 106: pairing over Wi-Fi, every
+  widget and page swiping work. Not yet tried on an Android 5 device (#184, #194,
+  [phongnguyen2277](https://github.com/phongnguyen2277)).
+- A WebView too old to run the panel at all (before Chromium 80, as Android 5 and 6 ship with) now says so on the phone
+  and in Settings, with how to update it, instead of leaving the screen black.
+
 ## 0.9.18 — 2026-11-17
 
 A Camera widget for IP cameras, the App dock bringing a running app back as it was, and more of the panel in every
