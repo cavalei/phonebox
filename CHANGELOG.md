@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+**Panel**
+- The Note widget can be edited from the phone: tap it, write, save (#218, [cavalei](https://github.com/cavalei)).
+
 ## 0.9.18 — 2026-11-17
 
 A Camera widget for IP cameras, the App dock bringing a running app back as it was, and more of the panel in every

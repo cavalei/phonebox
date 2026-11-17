@@ -364,22 +364,17 @@ app.MapPut("/api/settings", async (HttpRequest req, ConfigStore cfg, ControlDeck
 });
 
 // Narrow write path for the phone: only the text of a Note widget may be changed.
-app.MapPost("/api/widget/{pageId}/{widgetId}/option", async (string pageId, string widgetId, HttpRequest req, ConfigStore cfg) =>
+// The text travels in the query string: the Android proxy forwards no request body.
+app.MapPost("/api/widget/{pageId}/{widgetId}/note", (string pageId, string widgetId, string? text, ConfigStore cfg) =>
 {
-    if (req.ContentType?.StartsWith("application/json") != true) return Results.StatusCode(415);
-    using var doc = JsonDocument.Parse(await new StreamReader(req.Body).ReadToEndAsync());
-    if (!doc.RootElement.TryGetProperty("key", out var key) || key.GetString() != "text")
-        return Results.BadRequest(new { error = "option not allowed" });
-    if (!doc.RootElement.TryGetProperty("value", out var value) || value.ValueKind != JsonValueKind.String)
-        return Results.BadRequest(new { error = "text expected" });
-    var conf = cfg.Get();
-    var page = conf.Pages?.FirstOrDefault(p => p.Id == pageId);
-    var widget = page?.Widgets?.FirstOrDefault(w => w.Id == widgetId);
-    if (widget is null) return Results.NotFound(new { error = "widget not found" });
-    if (widget.Type != "note") return Results.BadRequest(new { error = "option not allowed" });
-    widget.Set("text", value.GetString());
-    var err = cfg.Save(JsonSerializer.Serialize(conf, ConfigStore.WriteOpts));
-    return err is null ? Results.Ok(new { version = cfg.Version }) : Results.BadRequest(new { error = err });
+    var r = NoteEdit.Apply(cfg, pageId, widgetId, text);
+    return r.Status switch
+    {
+        200 => Results.Ok(new { version = r.Version }),
+        404 => Results.NotFound(new { error = r.Error }),
+        409 => Results.Json(new { error = r.Error }, statusCode: StatusCodes.Status409Conflict),
+        _ => Results.BadRequest(new { error = r.Error }),
+    };
 });
 
 app.MapPost("/api/shortcuts/test", async (HttpRequest req, ConfigStore cfg, ILogger<Program> log) =>

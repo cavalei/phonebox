@@ -506,6 +506,19 @@
     if (path.startsWith('/api/controls/command/') && method === 'POST') return json(await controlCommand(path.split('/').pop(), q));
     if (path === '/api/state') return json(state(q.has('ev') ? +q.get('ev') : null));
     if (path === '/api/config') return json({ version: cfgVersion(), config: publicConfig(await config()) });
+    if (path.startsWith('/api/widget/') && path.endsWith('/note') && method === 'POST') {
+      const parts = path.split('/');
+      const pageId = decodeURIComponent(parts[3]);
+      const widgetId = decodeURIComponent(parts[4]);
+      const c = await config();
+      const pg = (c.pages || []).find((p) => p.id === pageId);
+      const w = pg && (pg.widgets || []).find((x) => x.id === widgetId);
+      if (!w || w.type !== 'note') return json({ error: 'option not allowed' }, 400);
+      w.options = { ...(w.options || {}), text: q.get('text') || '' };
+      store.set('pb-demo-config', c);
+      store.set('pb-demo-version', cfgVersion() + 1);
+      return json({ version: cfgVersion() });
+    }
     if (path === '/api/volume' && method === 'POST') {
       // the agent answers with the new volume state (AudioSnapshot)
       const op = q.get('op'), level = q.has('level') ? +q.get('level') : null;
