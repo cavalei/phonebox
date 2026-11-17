@@ -10,7 +10,7 @@ public static class NoteEdit
 {
     public const int MaxLength = 500;
 
-    public sealed record Result(int Status, string? Error = null, long? Version = null);
+    public sealed record Result(int Status, string? Error = null, string? Version = null);
 
     public static Result Apply(ConfigStore cfg, string pageId, string widgetId, string? text, long? expectedVersion = null)
     {
@@ -29,6 +29,6 @@ public static class NoteEdit
         widget.Set("text", text);
         var err = cfg.Save(JsonSerializer.Serialize(copy, ConfigStore.WriteOpts), version);
         if (err == ConfigStore.Conflict) return new(409, err);
-        return err is null ? new(200, null, cfg.Version) : new(400, err);
+        return err is null ? new(200, null, cfg.VersionText) : new(400, err);
     }
 }

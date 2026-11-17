@@ -372,7 +372,7 @@ app.MapPost("/api/widget/{pageId}/{widgetId}/note", (string pageId, string widge
     var r = NoteEdit.Apply(cfg, pageId, widgetId, text, expected);
     return r.Status switch
     {
-        200 => Results.Ok(new { version = r.Version?.ToString(CultureInfo.InvariantCulture) }),
+        200 => Results.Ok(new { version = r.Version }),
         404 => Results.NotFound(new { error = r.Error }),
         409 => Results.Json(new { error = r.Error }, statusCode: StatusCodes.Status409Conflict),
         _ => Results.BadRequest(new { error = r.Error }),
