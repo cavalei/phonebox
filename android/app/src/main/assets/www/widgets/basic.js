@@ -1036,19 +1036,22 @@ W.note = {
       cancel.onclick = () => wrap.remove();
       const save = h('button', 'btn primary sm', t('w.note.save'));
       save.onclick = async () => {
+        const submitted = ta.value;
         save.disabled = true;
+        ta.disabled = true;
         try {
-          const res = await fetch(API + '/widget/' + encodeURIComponent(page.id) + '/' + encodeURIComponent(w.id) + '/note?text=' + encodeURIComponent(ta.value), {
+          const res = await fetch(API + '/widget/' + encodeURIComponent(page.id) + '/' + encodeURIComponent(w.id) + '/note?text=' + encodeURIComponent(submitted), {
             method: 'POST',
             cache: 'no-store',
             headers: PANEL_HEADERS,
           });
           if (!res.ok) throw new Error('HTTP ' + res.status);
-          o.text = ta.value;
+          o.text = submitted;
           paint();
           wrap.remove();
         } catch (_) {
           save.disabled = false;
+          ta.disabled = false;
           toast(t('w.note.failed'));
         }
       };
