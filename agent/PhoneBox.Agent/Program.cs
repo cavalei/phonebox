@@ -365,9 +365,10 @@ app.MapPut("/api/settings", async (HttpRequest req, ConfigStore cfg, ControlDeck
 
 // Narrow write path for the phone: only the text of a Note widget may be changed.
 // The text travels in the query string: the Android proxy forwards no request body.
-app.MapPost("/api/widget/{pageId}/{widgetId}/note", (string pageId, string widgetId, string? text, ConfigStore cfg) =>
+app.MapPost("/api/widget/{pageId}/{widgetId}/note", (string pageId, string widgetId, string? text, string? version, ConfigStore cfg) =>
 {
-    var r = NoteEdit.Apply(cfg, pageId, widgetId, text);
+    long? expected = long.TryParse(version, out var v) ? v : null;
+    var r = NoteEdit.Apply(cfg, pageId, widgetId, text, expected);
     return r.Status switch
     {
         200 => Results.Ok(new { version = r.Version }),

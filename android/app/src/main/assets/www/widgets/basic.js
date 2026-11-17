@@ -1,4 +1,4 @@
-import { $, API, D, LEVEL_COLOR, LOCALE, mediaHtml, METRICS, PANEL_HEADERS, PREVIEW, Q_STYLE, S_ORDER, ago, api, averageColor, buzz, cfg, chart, color, cssVar, currentProcessesSort, emit, fillIcon, fmtClock, fmtDur, fmtHM, fmtMem, fmtReset, fmtTime, fmtValue, gotoProcesses, gpuMem, gpusOf, h, haptic, hasProcessesPage, hist, hour12, keyButton, levelOf, media, metricText, online, openSheet, paceInfo, pad, prRow, pushView, quotaProviders, r1, registerProcessesSorter, renderStatus, ringSvg, setArtColor, setMediaState, setVolDragging, shortDur, shortGpu, store, t, tick, toast, volDragging, wxBlock, wxIcon } from '../main.js';
+import { $, API, D, LEVEL_COLOR, LOCALE, mediaHtml, METRICS, PANEL_HEADERS, PREVIEW, Q_STYLE, S_ORDER, ago, api, averageColor, buzz, cfg, cfgVersion, chart, color, cssVar, currentProcessesSort, emit, fillIcon, fmtClock, fmtDur, fmtHM, fmtMem, fmtReset, fmtTime, fmtValue, gotoProcesses, gpuMem, gpusOf, h, haptic, hasProcessesPage, hist, hour12, keyButton, levelOf, media, metricText, online, openSheet, paceInfo, pad, prRow, pushView, quotaProviders, r1, registerProcessesSorter, renderStatus, ringSvg, setArtColor, setMediaState, setVolDragging, shortDur, shortGpu, store, t, tick, toast, volDragging, wxBlock, wxIcon } from '../main.js';
 import { W } from '../registry.js';
 import { invalidateDeckState } from './controls.js';
 
@@ -1024,7 +1024,7 @@ W.note = {
       box.replaceChildren(h('div', 'note-t', text));
     };
     paint();
-    if (PREVIEW) return {};
+    if (PREVIEW || String(w.id).includes(':')) return {};
     box.addEventListener('click', () => {
       if (!$('overview').hidden) return;
       haptic();
@@ -1045,11 +1045,16 @@ W.note = {
         save.disabled = true;
         ta.disabled = true;
         try {
-          const res = await fetch(API + '/widget/' + encodeURIComponent(page.id) + '/' + encodeURIComponent(w.id) + '/note?text=' + encodeURIComponent(submitted), {
+          const res = await fetch(API + '/widget/' + encodeURIComponent(page.id) + '/' + encodeURIComponent(w.id) + '/note?text=' + encodeURIComponent(submitted) + '&version=' + encodeURIComponent(cfgVersion ?? ''), {
             method: 'POST',
             cache: 'no-store',
             headers: PANEL_HEADERS,
           });
+          if (res.status === 409) {
+            wrap.remove();
+            toast(t('w.note.changed'));
+            return;
+          }
           if (!res.ok) throw new Error('HTTP ' + res.status);
           o.text = submitted;
           paint();
