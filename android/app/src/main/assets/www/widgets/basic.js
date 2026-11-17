@@ -319,7 +319,7 @@ W.meters = {
     box.style.setProperty('--c', cssVar('--ram'));
     const up = h('span', 's-name');
     const list = h('div', 'meters');
-    box.append(h('div', 's-head', h('span', 's-label', 'Memory'), up), list);
+    box.append(h('div', 's-head', h('span', 's-label', t('w.memory')), up), list);
     bindProcessLink(box, 'mem');
     const meter = (name, txt, pct, c) => {
       const e = h('div', 'meter', h('div', 'm-row', h('span', null, name), h('span', null, txt)), h('div', 'track', h('i')));
@@ -577,7 +577,7 @@ W.sessions = {
   create(box) {
     const sum = h('span', 'w-sum');
     const list = h('div', 's-list', h('div', 'empty', t('sess.waitingData')));
-    box.append(h('div', 'w-head', h('span', 's-label', 'Sessions'), sum), list);
+    box.append(h('div', 'w-head', h('span', 's-label', t('w.sessions')), sum), list);
     box.style.setProperty('--c', '#d97757');
     const tokens = (n) => n == null ? '—' : n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : n >= 1e3 ? (n / 1e3).toFixed(1) + 'k' : String(n);
     const statusText = (s) => s.status === 'busy' ? t('sess.working') : s.status === 'waiting' ? t('sess.waiting') : s.status === 'shell' ? t('sess.shell') : s.outcome === 'completed' ? t('sess.completed') : s.outcome === 'aborted' ? t('sess.aborted') : t('sess.idle');
@@ -626,7 +626,7 @@ W.sessions = {
           counts.busy + counts.shell ? `${counts.busy + counts.shell} working` : '',
           counts.waiting ? `${counts.waiting} waiting` : '',
           counts.idle ? `${counts.idle} idle` : '',
-        ].filter(Boolean).join(' · ') || 'No open sessions';
+        ].filter(Boolean).join(' · ') || t('w.noOpenSessions');
         const sorted = [...sessions].sort((a, b) => (S_ORDER[a.status] ?? 9) - (S_ORDER[b.status] ?? 9) || b.since - a.since);
         const rows = sorted.length ? sorted.map((s) => {
           const row = h('button', 'sess ' + s.status,
@@ -636,7 +636,7 @@ W.sessions = {
           row.type = 'button';
           row.addEventListener('click', () => openDetails(s));
           return row;
-        }) : [h('div', 'empty', 'No Claude Code / Codex sessions open')];
+        }) : [h('div', 'empty', t('w.noAiSessions'))];
         list.replaceChildren(...rows);
       },
     };
@@ -679,7 +679,7 @@ W.processes = {
     const seg = h('div', 'seg', h('button', sort === 'cpu' ? 'on' : null, 'CPU'), h('button', sort === 'mem' ? 'on' : null, 'RAM'));
     const grid = h('div', 'p-grid', h('div', 'empty', t('w.procsWait')));
     box.style.setProperty('--c', '#f472b6');
-    box.append(h('div', 'p-head', h('span', 's-label', 'Processes'), sum, seg), grid);
+    box.append(h('div', 'p-head', h('span', 's-label', t('w.processes')), sum, seg), grid);
     const els = new Map();
     const rowEl = (g) => {
       let e = els.get(g.name);
