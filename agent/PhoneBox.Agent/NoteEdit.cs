@@ -8,13 +8,13 @@ namespace PhoneBox.Agent;
 /// </summary>
 public static class NoteEdit
 {
-    public const int MaxLength = 1000;
+    public const int MaxLength = 500;
 
     public sealed record Result(int Status, string? Error = null, long? Version = null);
 
     public static Result Apply(ConfigStore cfg, string pageId, string widgetId, string? text, long? expectedVersion = null)
     {
-        if (string.IsNullOrEmpty(text)) return new(400, "text expected");
+        if (text is null) return new(400, "text expected");
         if (text.Length > MaxLength) return new(400, "text too long");
 
         // Work on a copy: cfg.Get() is the shared, cached config, and a save may still refuse.

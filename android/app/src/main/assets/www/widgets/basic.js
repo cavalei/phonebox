@@ -1012,6 +1012,8 @@ W.countdown = {
   },
 };
 
+const NOTE_MAX = 500;
+
 W.note = {
   bare: true, needs: [],
   create(box, { o, page, w }) {
@@ -1024,12 +1026,15 @@ W.note = {
     paint();
     if (PREVIEW) return {};
     box.addEventListener('click', () => {
+      if (!$('overview').hidden) return;
       haptic();
       const wrap = h('div', 'note-edit');
+      wrap.onclick = (e) => { if (e.target === wrap) wrap.remove(); };
       const card = h('div', 'note-card');
       const ta = document.createElement('textarea');
       ta.className = 'note-ta';
       ta.value = String(o.text ?? '');
+      ta.maxLength = NOTE_MAX;
       ta.rows = 6;
       const row = h('div', 'note-actions');
       const cancel = h('button', 'btn sm', t('w.note.cancel'));

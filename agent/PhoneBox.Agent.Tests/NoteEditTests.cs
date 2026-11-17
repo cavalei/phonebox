@@ -11,6 +11,12 @@ public class NoteEditTests
         return (new ConfigStore(path), path);
     }
 
+    private static void Cleanup(string path)
+    {
+        File.Delete(path);
+        File.Delete(path + ".bak");
+    }
+
     [Fact]
     public void SetsTheTextOfANote()
     {
@@ -22,19 +28,29 @@ public class NoteEditTests
             var w = cfg.Get().Pages!.First(p => p.Id == "p").Widgets!.First(w => w.Id == "n");
             Assert.Equal("hello", w.Options!["text"].GetString());
         }
-        finally { File.Delete(path); }
+        finally { Cleanup(path); }
     }
 
     [Fact]
-    public void RefusesMissingOrEmptyText()
+    public void AnEmptyTextClearsTheNote()
     {
         var (cfg, path) = Make();
         try
         {
-            Assert.Equal(400, NoteEdit.Apply(cfg, "p", "n", null).Status);
-            Assert.Equal(400, NoteEdit.Apply(cfg, "p", "n", "").Status);
+            var r = NoteEdit.Apply(cfg, "p", "n", "");
+            Assert.Equal(200, r.Status);
+            var w = cfg.Get().Pages!.First(p => p.Id == "p").Widgets!.First(w => w.Id == "n");
+            Assert.Equal("", w.Options!["text"].GetString());
         }
-        finally { File.Delete(path); }
+        finally { Cleanup(path); }
+    }
+
+    [Fact]
+    public void AMissingTextIsRefused()
+    {
+        var (cfg, path) = Make();
+        try { Assert.Equal(400, NoteEdit.Apply(cfg, "p", "n", null).Status); }
+        finally { Cleanup(path); }
     }
 
     [Fact]
@@ -42,7 +58,7 @@ public class NoteEditTests
     {
         var (cfg, path) = Make();
         try { Assert.Equal(400, NoteEdit.Apply(cfg, "p", "n", new string('x', NoteEdit.MaxLength + 1)).Status); }
-        finally { File.Delete(path); }
+        finally { Cleanup(path); }
     }
 
     [Fact]
@@ -50,7 +66,7 @@ public class NoteEditTests
     {
         var (cfg, path) = Make();
         try { Assert.Equal(404, NoteEdit.Apply(cfg, "p", "missing", "hello").Status); }
-        finally { File.Delete(path); }
+        finally { Cleanup(path); }
     }
 
     [Fact]
@@ -58,7 +74,7 @@ public class NoteEditTests
     {
         var (cfg, path) = Make();
         try { Assert.Equal(400, NoteEdit.Apply(cfg, "p", "c", "hello").Status); }
-        finally { File.Delete(path); }
+        finally { Cleanup(path); }
     }
 
     [Fact]
@@ -66,6 +82,6 @@ public class NoteEditTests
     {
         var (cfg, path) = Make();
         try { Assert.Equal(409, NoteEdit.Apply(cfg, "p", "n", "hello", expectedVersion: -1).Status); }
-        finally { File.Delete(path); }
+        finally { Cleanup(path); }
     }
 }
