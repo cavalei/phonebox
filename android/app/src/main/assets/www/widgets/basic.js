@@ -1,4 +1,4 @@
-import { $, API, D, LEVEL_COLOR, LOCALE, mediaHtml, METRICS, Q_STYLE, S_ORDER, ago, api, averageColor, buzz, cfg, chart, color, cssVar, currentProcessesSort, emit, fillIcon, fmtClock, fmtDur, fmtHM, fmtMem, fmtReset, fmtTime, fmtValue, gotoProcesses, gpuMem, gpusOf, h, haptic, hasProcessesPage, hist, hour12, keyButton, levelOf, media, metricText, online, openSheet, paceInfo, pad, prRow, pushView, quotaProviders, r1, registerProcessesSorter, renderStatus, ringSvg, setArtColor, setMediaState, setVolDragging, shortDur, shortGpu, store, t, tick, toast, volDragging, wxBlock, wxIcon } from '../main.js';
+import { $, API, D, LEVEL_COLOR, LOCALE, mediaHtml, METRICS, PANEL_HEADERS, Q_STYLE, S_ORDER, ago, api, averageColor, buzz, cfg, chart, color, cssVar, currentProcessesSort, emit, fillIcon, fmtClock, fmtDur, fmtHM, fmtMem, fmtReset, fmtTime, fmtValue, gotoProcesses, gpuMem, gpusOf, h, haptic, hasProcessesPage, hist, hour12, keyButton, levelOf, media, metricText, online, openSheet, paceInfo, pad, prRow, pushView, quotaProviders, r1, registerProcessesSorter, renderStatus, ringSvg, setArtColor, setMediaState, setVolDragging, shortDur, shortGpu, store, t, tick, toast, volDragging, wxBlock, wxIcon } from '../main.js';
 import { W } from '../registry.js';
 import { invalidateDeckState } from './controls.js';
 
@@ -1014,11 +1014,53 @@ W.countdown = {
 
 W.note = {
   bare: true, needs: [],
-  create(box, { o }) {
-    const text = String(o.text ?? '');
-    box.style.setProperty('--n', o.color || '#fbbf24');
-    box.style.setProperty('--nf', text.length < 25 ? 15 : text.length < 70 ? 10.5 : text.length < 160 ? 8 : 6.5);
-    box.append(h('div', 'note-t', text));
+  create(box, { o, page, w }) {
+    const paint = () => {
+      const text = String(o.text ?? '');
+      box.style.setProperty('--n', o.color || '#fbbf24');
+      box.style.setProperty('--nf', text.length < 25 ? 15 : text.length < 70 ? 10.5 : text.length < 160 ? 8 : 6.5);
+      box.replaceChildren(h('div', 'note-t', text));
+    };
+    paint();
+    box.addEventListener('click', () => {
+      haptic();
+      const wrap = h('div');
+      wrap.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px';
+      const card = h('div');
+      card.style.cssText = 'background:#1f2430;border-radius:14px;padding:14px;width:min(92vw,560px);display:flex;flex-direction:column;gap:10px;box-shadow:0 10px 40px #0008';
+      const ta = document.createElement('textarea');
+      ta.value = String(o.text ?? '');
+      ta.rows = 6;
+      ta.style.cssText = 'width:100%;box-sizing:border-box;font:inherit;font-size:16px;line-height:1.4;padding:10px;border-radius:10px;border:1px solid #3a4150;background:#151922;color:#eef2f6;resize:vertical';
+      const row = h('div');
+      row.style.cssText = 'display:flex;gap:8px;justify-content:flex-end';
+      const cancel = h('button', 'btn sm', 'Cancel');
+      cancel.onclick = () => wrap.remove();
+      const save = h('button', 'btn primary sm', 'Save');
+      save.onclick = async () => {
+        save.disabled = true;
+        try {
+          const res = await fetch(API + '/widget/' + encodeURIComponent(page.id) + '/' + encodeURIComponent(w.id) + '/option', {
+            method: 'POST',
+            cache: 'no-store',
+            headers: { ...PANEL_HEADERS, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key: 'text', value: ta.value }),
+          });
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          o.text = ta.value;
+          paint();
+          wrap.remove();
+        } catch (_) {
+          save.disabled = false;
+          toast('Could not save');
+        }
+      };
+      row.append(cancel, save);
+      card.append(ta, row);
+      wrap.append(card);
+      document.body.append(wrap);
+      ta.focus();
+    });
     return {};
   },
 };
