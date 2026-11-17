@@ -1017,6 +1017,7 @@ const NOTE_MAX = 500;
 W.note = {
   bare: true, needs: [],
   create(box, { o, page, w }) {
+    let savedVersion = null;
     const paint = () => {
       const text = String(o.text ?? '');
       box.style.setProperty('--n', o.color || '#fbbf24');
@@ -1034,6 +1035,7 @@ W.note = {
       const ta = document.createElement('textarea');
       ta.className = 'note-ta';
       ta.value = String(o.text ?? '');
+      const opened = savedVersion ?? cfgVersion;
       ta.maxLength = NOTE_MAX;
       ta.rows = 6;
       const row = h('div', 'note-actions');
@@ -1045,7 +1047,7 @@ W.note = {
         save.disabled = true;
         ta.disabled = true;
         try {
-          const res = await fetch(API + '/widget/' + encodeURIComponent(page.id) + '/' + encodeURIComponent(w.id) + '/note?text=' + encodeURIComponent(submitted) + '&version=' + encodeURIComponent(cfgVersion ?? ''), {
+          const res = await fetch(API + '/widget/' + encodeURIComponent(page.id) + '/' + encodeURIComponent(w.id) + '/note?text=' + encodeURIComponent(submitted) + '&version=' + encodeURIComponent(opened ?? ''), {
             method: 'POST',
             cache: 'no-store',
             headers: PANEL_HEADERS,
@@ -1056,6 +1058,7 @@ W.note = {
             return;
           }
           if (!res.ok) throw new Error('HTTP ' + res.status);
+          savedVersion = (await res.json().catch(() => ({}))).version ?? null;
           o.text = submitted;
           paint();
           wrap.remove();

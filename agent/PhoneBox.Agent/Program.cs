@@ -457,7 +457,7 @@ object State(IServiceProvider sp, long? ev)
         update = upd.Status() is { } u && (u.AppUpdate || u.AgentUpdate) ? new { latest = u.Latest, app = u.AppUpdate, agent = u.AgentUpdate } : null,
         ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
         host = Environment.MachineName,
-        cfgVersion = sp.GetRequiredService<ConfigStore>().Version,
+        cfgVersion = sp.GetRequiredService<ConfigStore>().Version.ToString(),
         pushVersion = push.Version,
         evSeq = push.Seq,
         events = ev is { } since ? push.Since(since) : [],
@@ -698,7 +698,7 @@ app.MapGet("/api/widget/{page}/{widget}", (string page, string widget, bool? for
     runner.Get(page, widget, force == true) is { } r ? Results.Json(r) : Results.NotFound());
 
 app.MapGet("/api/config", (ConfigStore cfg, HttpRequest req, ShortcutIconUploads icons) =>
-    Results.Json(new { version = cfg.Version, config = cfg.Get().ToPublic(req.Headers["X-PhoneBox-Device"].ToString(),
+    Results.Json(new { version = cfg.Version.ToString(), config = cfg.Get().ToPublic(req.Headers["X-PhoneBox-Device"].ToString(),
         s => icons.Revision(s.Id) ?? ShortcutIcons.Revision(s)) }));
 
 // Phones that have talked to this agent, with their settings (Settings › Phones).
