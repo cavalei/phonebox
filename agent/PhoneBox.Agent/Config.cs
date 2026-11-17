@@ -445,8 +445,12 @@ public sealed partial class ConfigStore(string path)
     /// <paramref name="expectedVersion"/> (the <see cref="Version"/> the caller loaded), a save over a newer file is
     /// refused with <see cref="Conflict"/> instead of silently undoing the newer change.
     /// </summary>
-    public string? Save(string json, long? expectedVersion = null)
+    public string? Save(string json, long? expectedVersion = null) => Save(json, expectedVersion, out _);
+
+    /// <summary>Same as <see cref="Save(string, long?)"/>, and reports the version it wrote while it still holds the lock.</summary>
+    public string? Save(string json, long? expectedVersion, out long savedVersion)
     {
+        savedVersion = 0;
         AgentConfig cfg;
         try { cfg = JsonSerializer.Deserialize<AgentConfig>(json, ReadOpts) ?? throw new JsonException("empty"); }
         catch (JsonException ex) { return "Invalid JSON: " + ex.Message; }
@@ -477,6 +481,7 @@ public sealed partial class ConfigStore(string path)
             File.Move(tmp, path, overwrite: true);
             _config = cfg;
             _stamp = _seen = File.GetLastWriteTimeUtc(path);
+            savedVersion = _seen.Ticks;
         }
         return null;
     }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using PhoneBox.Agent;
 using Xunit;
@@ -27,6 +28,7 @@ public class NoteEditTests
             Assert.Equal(200, r.Status);
             var w = cfg.Get().Pages!.First(p => p.Id == "p").Widgets!.First(w => w.Id == "n");
             Assert.Equal("hello", w.Options!["text"].GetString());
+            Assert.Equal(cfg.Version.ToString(CultureInfo.InvariantCulture), r.Version);
         }
         finally { Cleanup(path); }
     }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 
 namespace PhoneBox.Agent;
@@ -27,8 +28,8 @@ public static class NoteEdit
         if (widget.Type != "note") return new(400, "option not allowed");
 
         widget.Set("text", text);
-        var err = cfg.Save(JsonSerializer.Serialize(copy, ConfigStore.WriteOpts), version);
+        var err = cfg.Save(JsonSerializer.Serialize(copy, ConfigStore.WriteOpts), version, out var savedVersion);
         if (err == ConfigStore.Conflict) return new(409, err);
-        return err is null ? new(200, null, cfg.VersionText) : new(400, err);
+        return err is null ? new(200, null, savedVersion.ToString(CultureInfo.InvariantCulture)) : new(400, err);
     }
 }
